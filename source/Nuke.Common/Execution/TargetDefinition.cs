@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Nuke.Common.DI;
 
 namespace Nuke.Common.Execution
 {
@@ -28,7 +29,7 @@ namespace Nuke.Common.Execution
             Conditions = new List<Func<bool>>();
             Requirements = new List<LambdaExpression>();
             TargetDefinitionDependencies = new List<TargetDefinition>();
-
+            TargetExecutorType = typeof(TargetExecutor);
             factory?.Invoke(this);
         }
 
@@ -47,6 +48,8 @@ namespace Nuke.Common.Execution
         internal List<string> ShadowTargetDependencies { get; }
         internal List<TargetDefinition> TargetDefinitionDependencies { get; }
         internal List<Action> Actions { get; }
+
+        internal Type TargetExecutorType { get; set; }
 
         ITargetDefinition ITargetDefinition.Description(string description)
         {
@@ -105,6 +108,13 @@ namespace Nuke.Common.Execution
         public ITargetDefinition Requires(params Expression<Func<bool>>[] requirement)
         {
             Requirements.AddRange(requirement);
+            return this;
+        }
+
+        public ITargetDefinition SetExecutor<TExecutorType>()
+            where TExecutorType : ITargetExecutor
+        {
+            TargetExecutorType = typeof(TExecutorType);
             return this;
         }
 

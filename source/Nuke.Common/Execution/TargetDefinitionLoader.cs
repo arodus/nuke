@@ -49,7 +49,7 @@ namespace Nuke.Common.Execution
                 var stringBuilder = new StringBuilder()
                     .AppendLine($"Target with name '{targetName}' is not available.")
                     .AppendLine()
-                    .AppendLine(HelpTextService.GetTargetsText(build));
+                   ;// .AppendLine(HelpTextService.GetTargetsText(build));
 
                 ControlFlow.Fail(stringBuilder.ToString());
             }

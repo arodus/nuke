@@ -11,10 +11,22 @@ using System.Text;
 
 namespace Nuke.Common.Execution
 {
-    internal static class GraphService
+
+    internal interface IGraphService
     {
-        public static void ShowGraph<T>(T build)
-            where T : NukeBuild
+        void ShowGraph();
+    }
+
+    internal partial class GraphService : IGraphService
+    {
+        private readonly NukeBuild _build;
+
+        public GraphService(NukeBuild build)
+        {
+            _build = build;
+        }
+
+        public void ShowGraph()
         {
             string GetStringFromStream(Stream stream)
             {
@@ -29,16 +41,16 @@ namespace Nuke.Common.Execution
             var resourceStream = assembly.GetManifestResourceStream(resourceName).NotNull("resourceStream != null");
 
             var graph = new StringBuilder();
-            foreach (var target in build.TargetDefinitions)
+            foreach (var target in _build.TargetDefinitions)
             {
-                var dependendBy = build.TargetDefinitions.Where(x => x.TargetDefinitionDependencies.Contains(target)).ToList();
+                var dependendBy = _build.TargetDefinitions.Where(x => x.TargetDefinitionDependencies.Contains(target)).ToList();
                 if (dependendBy.Count == 0)
                     graph.AppendLine(target.Name);
                 else
                     dependendBy.ForEach(x => graph.AppendLine($"{target.Name} --> {x.Name}"));
             }
 
-            var path = Path.Combine(build.TemporaryDirectory, "graph.html");
+            var path = Path.Combine(_build.TemporaryDirectory, "graph.html");
             var contents = GetStringFromStream(resourceStream).Replace("__GRAPH__", graph.ToString());
             File.WriteAllText(path, contents);
 

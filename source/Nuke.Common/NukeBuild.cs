@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using Autofac;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
+using Nuke.Common.DI;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 
@@ -51,7 +54,14 @@ namespace Nuke.Common
         protected static int Execute<T>(Expression<Func<T, Target>> defaultTargetExpression)
             where T : NukeBuild
         {
-            return BuildExecutor.Execute(defaultTargetExpression);
+            using (var container = Startup.Setup<T>())
+            using (var scope = container.BeginLifetimeScope("BuildScope"))
+            {
+                var buildExecutor = scope.Resolve<IBuildExecutor>();
+                return buildExecutor.Execute(defaultTargetExpression);
+            }
+
+            //return Execution.BuildExecutor.Execute(defaultTargetExpression);
         }
 
         internal IReadOnlyCollection<TargetDefinition> TargetDefinitions { get; set; }

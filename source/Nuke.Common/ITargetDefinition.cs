@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Nuke.Common.DI;
 
 namespace Nuke.Common
 {
@@ -68,5 +69,8 @@ namespace Nuke.Common
         ///   Adds a requirement that will be checked prior to build execution.
         /// </summary>
         ITargetDefinition Requires(params Expression<Func<bool>>[] requirement);
+
+        ITargetDefinition SetExecutor<TExecutorType>()
+            where TExecutorType : ITargetExecutor;
     }
 }

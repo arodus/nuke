@@ -106,12 +106,11 @@ namespace Nuke.Common.Execution
         {
             if (build.Help)
             {
-                Logger.Log(HelpTextService.GetTargetsText(build));
-                Logger.Log(HelpTextService.GetParametersText(build));
+               // Logger.Log(HelpTextService.GetTargetsText(build));
+              //  Logger.Log(HelpTextService.GetParametersText(build));
             }
 
-            if (build.Graph)
-                GraphService.ShowGraph(build);
+           
 
             if (build.Help || build.Graph)
                 Environment.Exit(exitCode: 0);

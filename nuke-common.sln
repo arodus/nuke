@@ -41,11 +41,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{B43B0E45-8
 		.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
 		Jenkinsfile = Jenkinsfile
 		LICENSE = LICENSE
-		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
-		README.md = README.md
+		NuGet.config = NuGet.config
 		nuke-common.sln.DotSettings = nuke-common.sln.DotSettings
 		nuke-common.sln.DotSettings.user = nuke-common.sln.DotSettings.user
-		NuGet.config = NuGet.config
+		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nuke.CodeGeneration", "source\Nuke.CodeGeneration\Nuke.CodeGeneration.csproj", "{34FBD413-AD5D-493E-BD61-ED8497D314A0}"
@@ -77,8 +77,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A2C37D4D-74E1-443B-999B-505B8C6694C9}

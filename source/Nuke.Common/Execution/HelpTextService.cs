@@ -11,18 +11,27 @@ using Nuke.Common.Utilities;
 
 namespace Nuke.Common.Execution
 {
-    internal static class HelpTextService
+    internal interface IHelpTextService
     {
-        public static string GetTargetsText<T>(T build)
-            where T : NukeBuild
+        string GetTargetsText();
+        string GetParametersText();
+    }
+    internal class HelpTextService : IHelpTextService
+    {
+        private readonly NukeBuild _build;
+        public HelpTextService(NukeBuild build)
+        {
+            _build = build;
+        }
+        public string GetTargetsText()   
         {
             var builder = new StringBuilder();
 
-            var longestTargetName = build.TargetDefinitions.Select(x => x.Name.Length).OrderByDescending(x => x).First();
+            var longestTargetName = _build.TargetDefinitions.Select(x => x.Name.Length).OrderByDescending(x => x).First();
             var padRightTargets = Math.Max(longestTargetName, val2: 20);
             builder.AppendLine("Targets (with their direct dependencies):");
             builder.AppendLine();
-            foreach (var target in build.TargetDefinitions)
+            foreach (var target in _build.TargetDefinitions)
             {
                 var dependencies = target.TargetDefinitionDependencies.Count > 0
                     ? $" -> {target.TargetDefinitionDependencies.Select(x => x.Name).JoinComma()}"
@@ -36,13 +45,12 @@ namespace Nuke.Common.Execution
             return builder.ToString();
         }
 
-        public static string GetParametersText<T>(T build)
-            where T : NukeBuild
+        public  string GetParametersText()
         {
-            var defaultTarget = build.TargetDefinitions.Single(x => x.IsDefault);
+            var defaultTarget = _build.TargetDefinitions.Single(x => x.IsDefault);
             var builder = new StringBuilder();
 
-            var parameters = build.GetParameterMembers().OrderBy(x => x.Name).ToList();
+            var parameters = _build.GetParameterMembers().OrderBy(x => x.Name).ToList();
             var padRightParameter = Math.Max(parameters.Max(x => x.Name.Length), val2: 17);
 
             void PrintParameter(MemberInfo parameter)
