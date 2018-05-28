@@ -21,14 +21,15 @@ using Nuke.Common.Utilities.Collections;
 
 namespace Nuke.Common.DI
 {
-   
-    
+
+
 
     internal interface IBuildExecutor
     {
         int Execute<T>(Expression<Func<T, Target>> defaultTargetExpression)
             where T : NukeBuild;
     }
+
     internal interface IInjectionService
     {
         void InjectValues(NukeBuild nukeBuild);
@@ -38,10 +39,12 @@ namespace Nuke.Common.DI
     {
         private readonly ILogger<InjectionService> _logger;
         private readonly IConfiguration _configuration;
+
         public InjectionService(ILogger<InjectionService> logger, IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
         }
+
         public void InjectValues(NukeBuild build)
         {
             var anyInjected = false;
@@ -57,7 +60,7 @@ namespace Nuke.Common.DI
                 ControlFlow.Assert(attributes.Count == 1, $"Member '{member.Name}' has multiple injection attributes applied.");
 
                 var attribute = attributes.Single();
-                var memberType = (member as FieldInfo)?.FieldType ?? ((PropertyInfo)member).PropertyType;
+                var memberType = (member as FieldInfo)?.FieldType ?? ((PropertyInfo) member).PropertyType;
                 var value = attribute.GetValue(member.Name, memberType);
                 if (value == null)
                     continue;
@@ -77,16 +80,21 @@ namespace Nuke.Common.DI
 
     internal class RequirementService : IRequirementService
     {
-        public RequirementService() { }
+        public RequirementService()
+        {
+        }
+
         public void ValidateRequirements(IReadOnlyCollection<TargetDefinition> executionList)
         {
-            
+
         }
     }
+
     internal interface IRequirementService
     {
         void ValidateRequirements(IReadOnlyCollection<TargetDefinition> executionList);
     }
+
     internal interface ITargetDefinitionService
     {
         string[] InvokedTargets { get; }
@@ -100,7 +108,7 @@ namespace Nuke.Common.DI
 
         public TargetDefinitionService()
         {
-           
+
         }
 
         public string[] InvokedTargets { get; }
@@ -109,13 +117,20 @@ namespace Nuke.Common.DI
 
         public IReadOnlyCollection<TargetDefinition> GetExecutingTargets(NukeBuild build)
         {
-           // ControlFlow.Assert(build.TargetDefinitions.All(x => !x.Name.EqualsOrdinalIgnoreCase(BuildExecutor.DefaultTarget)),
-         //       "The name 'default' cannot be used as target name.");
+            // ControlFlow.Assert(build.TargetDefinitions.All(x => !x.Name.EqualsOrdinalIgnoreCase(BuildExecutor.DefaultTarget)),
+            //       "The name 'default' cannot be used as target name.");
             return default(IReadOnlyCollection<TargetDefinition>);
         }
     }
-    public interface ITargetExecutor { }
-    public class TargetExecutor : ITargetExecutor { }
+
+    public interface ITargetExecutor
+    {
+    }
+
+    public class TargetExecutor : ITargetExecutor
+    {
+    }
+
     internal class BuildExecutor : IBuildExecutor
     {
         private readonly NukeBuild _buildInstance;
@@ -146,6 +161,7 @@ namespace Nuke.Common.DI
             _lifetimeScope = lifetimeScope;
             _helpTextService = helpTextService;
         }
+
         public int Execute<T>(Expression<Func<T, Target>> defaultTargetExpression)
             where T : NukeBuild
         {
@@ -170,8 +186,8 @@ namespace Nuke.Common.DI
             {
 
             }
-            
-           
+
+
 
             return 0;
         }
@@ -186,6 +202,7 @@ namespace Nuke.Common.DI
                 }
             }
         }
+
         private void HandleEarlyExits()
         {
             if (_buildInstance.Help)
@@ -210,12 +227,12 @@ namespace Nuke.Common.DI
 
     public class EnvironmentInfo : IEnvironmentInfo
     {
-        private readonly IConfiguration _configuration;
+        private readonly IParameterService _parameterService;
         private readonly ILogger _logger;
 
-        public EnvironmentInfo(IConfiguration configuration, ILogger logger)
+        public EnvironmentInfo(IParameterService parameterService, ILogger logger)
         {
-            _configuration = configuration;
+            _parameterService = parameterService;
             _logger = logger;
         }
 
@@ -226,7 +243,7 @@ namespace Nuke.Common.DI
                 var entryAssembly = Assembly.GetEntryAssembly();
                 ControlFlow.Assert(entryAssembly.GetTypes().Any(x => x.IsSubclassOf(typeof(NukeBuild))),
                     $"{entryAssembly} doesn't contain a NukeBuild class.");
-                return (PathConstruction.AbsolutePath)Path.GetDirectoryName(entryAssembly.Location).NotNull();
+                return (PathConstruction.AbsolutePath) Path.GetDirectoryName(entryAssembly.Location).NotNull();
             }
         }
 
@@ -240,18 +257,11 @@ namespace Nuke.Common.DI
                         .SingleOrDefaultOrError($"Found multiple project files in '{x}'."))
                     .FirstOrDefault(x => x != null)
                     ?.DirectoryName;
-                return (PathConstruction.AbsolutePath)buildProjectDirectory.NotNull("buildProjectDirectory != null");
+                return (PathConstruction.AbsolutePath) buildProjectDirectory.NotNull("buildProjectDirectory != null");
             }
         }
     }
 
-    public interface IParameterService
-    {
 
-    }
 
-    public class ParameterService
-    {
-
-    }
 }

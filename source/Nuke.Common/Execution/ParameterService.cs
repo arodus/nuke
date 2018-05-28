@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Configuration;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 
@@ -14,20 +15,22 @@ namespace Nuke.Common.Execution
 {
     public class ParameterService
     {
+        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _commandlineConfiguration;
         private static ParameterService s_instance;
 
-        private readonly string[] _commandLineArguments;
-        private readonly Func<IReadOnlyDictionary<string, string>> _environmentVariablesProvider;
+       
 
-        public ParameterService(
-            [CanBeNull] string[] commandLineArguments = null,
-            [CanBeNull] IReadOnlyDictionary<string, string> environmentVariables = null)
+
+        public ParameterService(IDictionary<string,string> parameters, IDictionary<string,string> commandLineArguments)
         {
-            _environmentVariablesProvider = () => environmentVariables ?? EnvironmentInfo.Variables;
-            _commandLineArguments = commandLineArguments ?? EnvironmentInfo.CommandLineArguments;
+            _configuration = configuration;
+            _commandlineConfiguration = commandlineConfiguration;
+            Instance = this;
         }
 
-        public static ParameterService Instance => s_instance ?? (s_instance = new ParameterService());
+
+        public  static ParameterService Instance { get; private set; }
 
         [CanBeNull]
         public T GetParameter<T>(string parameterName, char? separator = null)

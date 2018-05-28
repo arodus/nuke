@@ -15,7 +15,7 @@ namespace Nuke.Common.DI
 {
     internal static class Startup
     {
-        public static IConfiguration Configuration { get; private set; }
+        public static IConfigurationRoot Configuration { get; private set; }
 
         public static IContainer Setup<T>()
         {
@@ -31,7 +31,7 @@ namespace Nuke.Common.DI
             return container;
         }
 
-        private static IConfiguration BuildConfiguration(IConfigurationBuilder configurationBuilder)
+        private static IConfigurationRoot BuildConfiguration(IConfigurationBuilder configurationBuilder)
         {
             return configurationBuilder
                 .AddEnvironmentVariables()
@@ -52,8 +52,9 @@ namespace Nuke.Common.DI
             builder.RegisterType<BuildExecutor>().As<IBuildExecutor>().SingleInstance();
             builder.RegisterType<GraphService>().As<IGraphService>().SingleInstance();
             builder.RegisterType<HelpTextService>().As<IHelpTextService>().SingleInstance();
-            builder.Register(x => new EnvironmentInfo(Configuration, x.Resolve<ILogger<EnvironmentInfo>>())).SingleInstance().As<IEnvironmentInfo>();
-
+            builder.RegisterType<EnvironmentInfo>().As<IEnvironmentInfo>().SingleInstance();
+            //Single instance????
+            builder.RegisterInstance(x => new ParameterService(Configuration.GetChildren().ToDictionary(y => y.Key, y => y.Value),Configuration.Providers.Single(y => y.GetType() == typeof(CommandLineConfigurationProvider)).GEt))
 
            
 
