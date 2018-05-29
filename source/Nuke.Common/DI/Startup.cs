@@ -53,8 +53,14 @@ namespace Nuke.Common.DI
             builder.RegisterType<GraphService>().As<IGraphService>().SingleInstance();
             builder.RegisterType<HelpTextService>().As<IHelpTextService>().SingleInstance();
             builder.RegisterType<EnvironmentInfo>().As<IEnvironmentInfo>().SingleInstance();
-            //Single instance????
-            builder.RegisterInstance(x => new ParameterService(Configuration.GetChildren().ToDictionary(y => y.Key, y => y.Value),Configuration.Providers.Single(y => y.GetType() == typeof(CommandLineConfigurationProvider)).GEt))
+            builder.Register<ParameterService>(x => new ParameterService(
+                    Configuration.GetChildren().ToDictionary(y => y.Key, y => y.Value),
+                    Configuration
+                        .Providers.OfType<CommandLineConfigurationProvider>()
+                        .SingleOrDefault()?
+                        .GetAvailableParameters()))
+                .As<IParameterService>()
+                .SingleInstance();
 
            
 

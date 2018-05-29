@@ -40,5 +40,10 @@ namespace Nuke.Common.DI.Configuration
             data.Add(current, values.Join(separator: ' '));
             Data = data;
         }
+
+        public IReadOnlyCollection<string> GetAvailableParameters()
+        {
+            return Data.Keys.ToArray();
+        }
     }
 }
