@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 
@@ -15,45 +14,43 @@ namespace Nuke.Common.Execution
 {
     public class ParameterService
     {
-        private readonly IConfiguration _configuration;
-        private readonly IConfiguration _commandlineConfiguration;
         private static ParameterService s_instance;
 
-       
+        private readonly string[] _commandLineArguments;
+        private readonly Func<IReadOnlyDictionary<string, string>> _environmentVariablesProvider;
 
-
-        public ParameterService(IDictionary<string,string> parameters, IDictionary<string,string> commandLineArguments)
+        public ParameterService(
+            [CanBeNull] string[] commandLineArguments = null,
+            [CanBeNull] IReadOnlyDictionary<string, string> environmentVariables = null)
         {
-            _configuration = configuration;
-            _commandlineConfiguration = commandlineConfiguration;
-            Instance = this;
+            _environmentVariablesProvider = () => environmentVariables ?? EnvironmentInfo.Variables;
+            _commandLineArguments = commandLineArguments ?? EnvironmentInfo.CommandLineArguments;
         }
 
-
-        public  static ParameterService Instance { get; private set; }
+        public static ParameterService Instance => s_instance ?? (s_instance = new ParameterService());
 
         [CanBeNull]
         public T GetParameter<T>(string parameterName, char? separator = null)
         {
-            return (T) GetParameter(parameterName, typeof(T), separator);
+            return (T)GetParameter(parameterName, typeof(T), separator);
         }
 
         [CanBeNull]
         public T GetCommandLineArgument<T>(string parameterName, char? separator = null)
         {
-            return (T) GetCommandLineArgument(parameterName, typeof(T), separator);
+            return (T)GetCommandLineArgument(parameterName, typeof(T), separator);
         }
 
         [CanBeNull]
         public T GetCommandLineArgument<T>(int position, char? separator = null)
         {
-            return (T) GetCommandLineArgument(position, typeof(T), separator);
+            return (T)GetCommandLineArgument(position, typeof(T), separator);
         }
 
         [CanBeNull]
         public T GetEnvironmentVariable<T>(string parameterName, char? separator = null)
         {
-            return (T) GetEnvironmentVariable(parameterName, typeof(T), separator);
+            return (T)GetEnvironmentVariable(parameterName, typeof(T), separator);
         }
 
         [CanBeNull]
@@ -134,7 +131,7 @@ namespace Nuke.Common.Execution
             {
                 var shouldSplit = hadLower && char.IsUpper(c);
                 hadLower = char.IsLower(c) && !shouldSplit;
-                
+
                 return shouldSplit;
             }).Join("-");
 
@@ -264,7 +261,7 @@ namespace Nuke.Common.Execution
             name = name.ToLower();
             foreach (var candidate in candidates.Select(x => x.ToLower()))
             {
-                var levenshteinDistance = (float) GetLevenshteinDistance(name, candidate);
+                var levenshteinDistance = (float)GetLevenshteinDistance(name, candidate);
                 if (levenshteinDistance / name.Length <= similarityThreshold)
                 {
                     Logger.Warn($"Requested parameter '{name}' was not found. Is there a typo with '{candidate}' which was passed?");
@@ -275,30 +272,30 @@ namespace Nuke.Common.Execution
 
         private int GetLevenshteinDistance(string a, string b)
         {
-            if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) 
+            if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
                 return 0;
 
             var lengthA = a.Length;
             var lengthB = b.Length;
             var distances = new int[lengthA + 1, lengthB + 1];
-            
+
             for (var i = 0; i <= lengthA; distances[i, 0] = i++)
             {
             }
-            
+
             for (var j = 0; j <= lengthB; distances[0, j] = j++)
             {
             }
 
             for (var i = 1; i <= lengthA; i++)
-            for (var j = 1; j <= lengthB; j++)
-            {
-                var cost = b[j - 1] == a[i - 1] ? 0 : 1;
-                distances[i, j] = Math.Min(
-                    Math.Min(distances[i - 1, j] + 1, distances[i, j - 1] + 1),
-                    distances[i - 1, j - 1] + cost
-                );
-            }
+                for (var j = 1; j <= lengthB; j++)
+                {
+                    var cost = b[j - 1] == a[i - 1] ? 0 : 1;
+                    distances[i, j] = Math.Min(
+                        Math.Min(distances[i - 1, j] + 1, distances[i, j - 1] + 1),
+                        distances[i - 1, j - 1] + cost
+                    );
+                }
 
             return distances[lengthA, lengthB];
         }

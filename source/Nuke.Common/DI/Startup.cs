@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nuke.Common.DI.Configuration;
 using Nuke.Common.Execution;
+using Nuke.Common.Utilities.Collections;
 
 namespace Nuke.Common.DI
 {
@@ -53,12 +54,7 @@ namespace Nuke.Common.DI
             builder.RegisterType<GraphService>().As<IGraphService>().SingleInstance();
             builder.RegisterType<HelpTextService>().As<IHelpTextService>().SingleInstance();
             builder.RegisterType<EnvironmentInfo>().As<IEnvironmentInfo>().SingleInstance();
-            builder.Register<ParameterService>(x => new ParameterService(
-                    Configuration.GetChildren().ToDictionary(y => y.Key, y => y.Value),
-                    Configuration
-                        .Providers.OfType<CommandLineConfigurationProvider>()
-                        .SingleOrDefault()?
-                        .GetAvailableParameters()))
+            builder.Register<ParameterService>(x => new ParameterService(null,Environment.GetEnvironmentVariables().ToGeneric<string,string>().AsReadOnly()))
                 .As<IParameterService>()
                 .SingleInstance();
 

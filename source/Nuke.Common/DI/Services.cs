@@ -225,6 +225,10 @@ namespace Nuke.Common.DI
 
     }
 
+    public interface IParameterService
+    {
+
+    }
     public class EnvironmentInfo : IEnvironmentInfo
     {
         private readonly IParameterService _parameterService;
