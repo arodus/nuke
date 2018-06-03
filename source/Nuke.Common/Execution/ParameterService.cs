@@ -7,12 +7,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
+using Nuke.Common.DI;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 
 namespace Nuke.Common.Execution
 {
-    public class ParameterService
+    public class ParameterService : IParameterService
     {
         private static ParameterService s_instance;
 

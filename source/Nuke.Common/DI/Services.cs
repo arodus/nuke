@@ -234,7 +234,7 @@ namespace Nuke.Common.DI
         private readonly IParameterService _parameterService;
         private readonly ILogger _logger;
 
-        public EnvironmentInfo(IParameterService parameterService, ILogger logger)
+        public EnvironmentInfo(IParameterService parameterService, ILogger<EnvironmentInfo> logger)
         {
             _parameterService = parameterService;
             _logger = logger;
