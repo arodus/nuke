@@ -25,7 +25,7 @@ namespace Nuke.Common.Execution
             TargetDependencies = new List<Target>();
             ShadowTargetDependencies = new List<string>();
             Actions = new List<Action>();
-            Conditions = new List<Func<bool>>();
+            Conditions = new List<Condition>();
             Requirements = new List<LambdaExpression>();
             TargetDefinitionDependencies = new List<TargetDefinition>();
 
@@ -41,7 +41,7 @@ namespace Nuke.Common.Execution
         internal bool IsDefault { get; set; }
         internal TimeSpan Duration { get; set; }
         internal ExecutionStatus Status { get; set; }
-        internal List<Func<bool>> Conditions { get; }
+        internal List<Condition> Conditions { get; }
         internal List<LambdaExpression> Requirements { get; }
         internal List<Target> TargetDependencies { get; }
         internal List<string> ShadowTargetDependencies { get; }
@@ -84,7 +84,12 @@ namespace Nuke.Common.Execution
 
         public ITargetDefinition OnlyWhen(params Func<bool>[] conditions)
         {
-            Conditions.AddRange(conditions);
+            return OnlyWhen(CheckBefore.ThisTarget, conditions);
+        }
+
+        public ITargetDefinition OnlyWhen(CheckBefore checkBefore, params Func<bool>[] conditions)
+        {
+            Conditions.AddRange(conditions.Select(x => new Condition(x, checkBefore)));
             return this;
         }
 
@@ -111,6 +116,18 @@ namespace Nuke.Common.Execution
         public override string ToString()
         {
             return $"Target '{Name}'";
+        }
+
+        public struct Condition
+        {
+            public readonly Lazy<bool> Result;
+            public readonly CheckBefore CheckBefore;
+
+            public Condition(Func<bool> condition, CheckBefore checkBefore)
+            {
+                CheckBefore = checkBefore;
+                Result = new Lazy<bool>(condition);
+            }
         }
     }
 }

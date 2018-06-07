@@ -53,6 +53,11 @@ namespace Nuke.Common
         ITargetDefinition OnlyWhen(params Func<bool>[] conditions);
 
         /// <summary>
+        /// Adds a set of conditions that will be checked based on <c>checkBefore</c>.
+        /// </summary>
+        ITargetDefinition OnlyWhen(CheckBefore checkBefore, params Func<bool>[] conditions);
+
+        /// <summary>
         ///   Adds a required parameter that will be checked prior to build execution.
         /// </summary>
         ITargetDefinition Requires<T>(params Expression<Func<T>>[] parameterRequirement)

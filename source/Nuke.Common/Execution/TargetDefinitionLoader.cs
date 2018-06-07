@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Nuke.Common.Utilities;
+using Nuke.Common.Utilities.Collections;
 
 namespace Nuke.Common.Execution
 {
@@ -17,14 +18,24 @@ namespace Nuke.Common.Execution
             ControlFlow.Assert(build.TargetDefinitions.All(x => !x.Name.EqualsOrdinalIgnoreCase(BuildExecutor.DefaultTarget)),
                 "The name 'default' cannot be used as target name.");
 
-            var invokedTargets = build.InvokedTargets.Select(x => GetDefinition(x, build)).ToList();
+            var invokedTargets = build.InvokedTargets
+                .Select(x => GetDefinition(x, build))
+                .Where(x => x.Conditions.Where(y => y.CheckBefore == CheckBefore.AllTargets).All(y => y.Result.Value))
+                .ToList();
             var executingTargets = GetUnfilteredExecutingTargets(build, invokedTargets);
             var skippedTargets = executingTargets
                 .Where(x => !invokedTargets.Contains(x) &&
                             build.SkippedTargets != null &&
                             (build.SkippedTargets.Length == 0 ||
-                             build.SkippedTargets.Contains(x.Name, StringComparer.OrdinalIgnoreCase))).ToList();
-            skippedTargets.ForEach(x => x.Conditions.Add(() => false));
+                             build.SkippedTargets.Contains(x.Name, StringComparer.OrdinalIgnoreCase)))
+                .Concat(invokedTargets.Where(x => x.Conditions.Where(y => y.CheckBefore == CheckBefore.AllTargets).Any(y => !y.Result.Value))
+                    .SelectMany(GetDependentTargets))
+                .ToList();
+        
+            
+                
+
+            skippedTargets.ForEach(x => x.Conditions.Add(new TargetDefinition.Condition(() => false, CheckBefore.ThisTarget)));
 
             string[] GetNames(IEnumerable<TargetDefinition> targets)
                 => targets.Select(x => x.Name).ToArray();
@@ -56,6 +67,19 @@ namespace Nuke.Common.Execution
 
             return targetDefinition;
         }
+
+        private static List<TargetDefinition> GetDependentTargets(TargetDefinition targetDefinition)
+        {
+            var list = new List<TargetDefinition>();
+            foreach (var dependency in targetDefinition.TargetDefinitionDependencies)
+            {
+                list.Add(dependency);
+                list.AddRange(GetDependentTargets(dependency));
+            }
+
+            return list;
+        }
+
 
         private static List<TargetDefinition> GetUnfilteredExecutingTargets(NukeBuild build, IReadOnlyCollection<TargetDefinition> invokedTargets)
         {
@@ -94,7 +118,10 @@ namespace Nuke.Common.Execution
                 graphAsList.Remove(independent);
 
                 var targetDefinition = independent.Value;
-                var dependencies = executingTargets.SelectMany(x => x.TargetDefinitionDependencies);
+
+                var dependencies = executingTargets
+                    .SelectMany(x => x.TargetDefinitionDependencies);
+
                 if (!invokedTargets.Contains(targetDefinition) &&
                     !dependencies.Contains(targetDefinition))
                     continue;

@@ -35,7 +35,7 @@ namespace Nuke.Common.Execution
                 executionList = TargetDefinitionLoader.GetExecutingTargets(build);
                 RequirementService.ValidateRequirements(executionList, build);
                 Execute(executionList);
-                
+
                 return 0;
             }
             catch (AggregateException exception)
@@ -72,7 +72,7 @@ namespace Nuke.Common.Execution
                     continue;
                 }
 
-                if (target.Conditions.Any(x => !x()))
+                if (target.Conditions.Any(x => !x.Result.Value))
                 {
                     target.Status = ExecutionStatus.Skipped;
                     continue;
