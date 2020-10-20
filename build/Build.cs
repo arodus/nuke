@@ -11,6 +11,7 @@ using Nuke.Common.CI;
 using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.CI.Jenkins;
 using Nuke.Common.CI.TeamCity;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
@@ -38,6 +39,11 @@ using static Nuke.Common.Tools.ReSharper.ReSharperTasks;
 [DotNetVerbosityMapping]
 [ShutdownDotNetAfterServerBuild]
 [TeamCitySetDotCoverHomePath]
+[Jenkins("sad", 
+    AutoGenerate = false,
+    InvokedTargets = new[]{nameof(Pack), nameof(Test)},
+    NonEntryTargets = new[] { nameof(Restore), nameof(DownloadFonts), nameof(InstallFonts), nameof(ReleaseImage) },
+    ExcludedTargets = new[] { nameof(Clean), nameof(SignPackages) })]
 [TeamCity(
     TeamCityAgentPlatform.Windows,
     Version = "2019.2",
@@ -92,6 +98,17 @@ partial class Build : NukeBuild
     const string ReleaseBranchPrefix = "release";
     const string HotfixBranchPrefix = "hotfix";
 
+    Target Fu => _ => _
+        .Executes(() =>
+        {
+            var generator = GetType().GetCustomAttributes(typeof(ConfigurationAttributeBase), false).Cast<IConfigurationGenerator>()
+                .Where(x => x.HostType == HostType.Jenkins)
+                .SingleOrDefaultOrError($"Found multiple {nameof(IConfigurationGenerator)} with same ID ''.")
+                .NotNull("generator != null");
+
+            
+            generator.Generate(this, new []{ new ExecutableTarget()});
+        });
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
