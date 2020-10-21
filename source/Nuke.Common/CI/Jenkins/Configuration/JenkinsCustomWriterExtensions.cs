@@ -2,9 +2,9 @@
 using System.Linq;
 using Nuke.Common.Utilities;
 
-namespace Nuke.Common.CI.Jenkins
+namespace Nuke.Common.CI.Jenkins.Configuration
 {
-    public static class JenkinsCustomExtensions
+    public static class JenkinsCustomWriterExtensions
     {
         public static IDisposable WriteBlock(this CustomFileWriter writer, string text)
         {

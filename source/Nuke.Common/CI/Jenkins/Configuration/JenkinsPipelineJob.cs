@@ -3,26 +3,32 @@ using System.Linq;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 
-namespace Nuke.Common.CI.Jenkins
+namespace Nuke.Common.CI.Jenkins.Configuration
 {
-    public class JenkinsDeclarativePipelineJob : ConfigurationEntity
+    public class JenkinsPipelineJob : ConfigurationEntity
     {
-        private readonly JenkinsAgent _agent;
+        public JenkinsAgent Agent { get; set; }
         
-        public JenkinsDeclarativePipelineStage[] Stages { get; set; } 
-        public JenkinsDeclarativePipelineEnvironment Environment { get; set; }
-        public string BuildShPath { get; set; }
-        public string BuildPs1Path { get; set; }
-        public JenkinsDeclarativePipelineJob(JenkinsAgent agent)
-        {
-            _agent = agent;
-        }
+        public string BuildCmdPath { get; set; }
+        public JenkinsPipelineStage[] Stages { get; set; } 
+        public JenkinsPipelineEnvironment Environment { get; set; }
+        
+        public JenkinsParameter[] Parameters { get; set; }
 
         public override void Write(CustomFileWriter writer)
         {
             using (writer.WriteBlock("pipeline"))
             {
-                _agent.Write(writer);
+                Agent.Write(writer);
+
+                if (Parameters != null)
+                {
+                    using (writer.WriteBlock("parameters"))
+                    {
+                        Parameters.ForEach(x => x.Write(writer));
+                    }
+                }
+                
                 Environment?.Write(writer);
                 using (writer.WriteBlock("stages"))
                 {
@@ -40,12 +46,12 @@ namespace Nuke.Common.CI.Jenkins
             {
                 using (writer.WriteCodeBlock("if (Boolean.valueOf(env.IS_UNIX))"))
                 {
-                    writer.WriteLine($"sh \"{BuildShPath} $args\"");
+                    writer.WriteLine($"sh (\"{BuildCmdPath} $args\")");
                 }
 
                 using (writer.WriteCodeBlock("else"))
                 {
-                    writer.WriteLine($"powershell \"{BuildPs1Path} $args\"");
+                    writer.WriteLine($"powershell (\"{BuildCmdPath} $args\")");
                 }
             }
         }

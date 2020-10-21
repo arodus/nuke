@@ -2,9 +2,9 @@
 using System.Linq;
 using Nuke.Common.Utilities;
 
-namespace Nuke.Common.CI.Jenkins
+namespace Nuke.Common.CI.Jenkins.Configuration
 {
-    public class JenkinsDeclarativePipelineRunStep : JenkinsDeclarativePipelineStep
+    public class JenkinsPipelineRunStep : JenkinsPipelineStep
     {
         public string Command { get; set; }
         

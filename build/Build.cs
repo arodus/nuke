@@ -39,11 +39,13 @@ using static Nuke.Common.Tools.ReSharper.ReSharperTasks;
 [DotNetVerbosityMapping]
 [ShutdownDotNetAfterServerBuild]
 [TeamCitySetDotCoverHomePath]
-[Jenkins("sad", 
+[Jenkins("sad",
     AutoGenerate = false,
-    InvokedTargets = new[]{nameof(Pack), nameof(Test)},
+    InvokedTargets = new[] { nameof(Pack), nameof(Test) },
     NonEntryTargets = new[] { nameof(Restore), nameof(DownloadFonts), nameof(InstallFonts), nameof(ReleaseImage) },
-    ExcludedTargets = new[] { nameof(Clean), nameof(SignPackages) })]
+    ExcludedTargets = new[] { nameof(Clean), nameof(SignPackages) },
+    ImportSecrets = new[] { nameof(SlackWebhook), nameof(GitterAuthToken), nameof(NuGetApiKey) })
+]
 [TeamCity(
     TeamCityAgentPlatform.Windows,
     Version = "2019.2",
@@ -106,9 +108,9 @@ partial class Build : NukeBuild
                 .SingleOrDefaultOrError($"Found multiple {nameof(IConfigurationGenerator)} with same ID ''.")
                 .NotNull("generator != null");
 
-            
-            generator.Generate(this, new []{ new ExecutableTarget()});
+            generator.Generate(this, new[] { new ExecutableTarget() });
         });
+
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>

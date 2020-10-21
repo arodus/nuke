@@ -59,5 +59,6 @@ namespace Nuke.Common.CI
             Partitions.Add(targetDefinition, (member.Name, member.GetCustomAttribute<PartitionAttribute>().Total));
             return targetDefinition;
         }
+        
     }
 }
